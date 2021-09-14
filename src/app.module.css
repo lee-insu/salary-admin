@@ -1,0 +1,11 @@
+.app {
+    width: 100%;
+}
+
+.ul{
+    width: 312px;
+    height: 100vh;
+    float:left;
+    box-sizing: border-box;
+    background-color: cadetblue;
+}

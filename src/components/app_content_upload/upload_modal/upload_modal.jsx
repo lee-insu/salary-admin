@@ -1,16 +1,19 @@
-import React, { useState } from 'react';
+import React, { useRef, useState } from 'react';
 import style from './upload_modal.module.css';
-import {firestore} from '../../../service/firebase';
+import {firestore, storage} from '../../../service/firebase';
 
 const UploadModal = ({keywords}) => {
 
     const store = firestore.collection('appContent');
+    const fileInput = useRef();
 
     const [appName,setAppName] = useState('');
     const [appVer,setAppVer] = useState('');
     const [titleKeyword, setTitleKeyword] = useState('');
     const [researchInput,setResearchInput] = useState('');
     const [researchKeywords,setResearchKeywords] = useState([]);
+    const [imgs,setImgs] = useState([]);
+    const [urls,setUrls] = useState([]);
 
 
     const onChange = e => {
@@ -21,39 +24,96 @@ const UploadModal = ({keywords}) => {
             setAppVer(value);
         }else if(name === 'researchKeyword') {
             setResearchInput(value);
+        }else if(name === 'img') {
+            for(let i = 0; i <e.target.files.length; i++) {
+                const newImgs = e.target.files[i];
+                newImgs['id'] = Math.random();
+                setImgs(prevState => [...prevState,newImgs]);
+            }
         }
-
     };
-
     const onKeyDown = e => {
         const {key} = e;
         const trimmedInput = researchInput.trim();
 
-        if (key === ',' && trimmedInput.length && !keywords.includes(trimmedInput)) {
+        if (key === ',' && trimmedInput.length && !researchKeywords.includes(trimmedInput)) {
             e.preventDefault();
             setResearchKeywords(prevState => [...prevState, trimmedInput]);
             setResearchInput('');
+
           }
     };
 
 
+    const test = (e) => {
+        e.preventDefault();
+        console.log(imgs);
+        // const promises = [];
+        // imgs.map(img => {
+        //     const upload = storage.ref(`images/${appName}/${img.name}`).put(img);
+        //     promises.push(upload);
+        //     upload.on(
+        //         "state_changed",
+        //         snapshot => {},
+        //         error => {
+        //             console.log(error);
+        //         },
+        //         async() => {
+        //             await storage
+        //             .ref(`images/${appName}/`)
+        //             .child(img.name)
+        //             .getDownloadURL()
+        //             .then(urls => {
+        //                 setUrls(prevState => [...prevState,urls]);
+        //             });
+        //         }
+        //     )
+
+        // })
+        // Promise.all(promises)
+        // .then(()=> alert('suc'))
+        // .catch((e)=> console.log(e))
+    }
+
     const onSubmit = async(e) => {
         e.preventDefault();
-        try {
+
+            const promises = [];
+            imgs.map(img => {
+                const upload = storage.ref(`images/${appName}/${appVer}/${img.name}`).put(img);
+                promises.push(upload);
+                upload.on(
+                    "state_changed",
+                    snapshot => {},
+                    error => {
+                        console.log(error);
+                    },
+                    async() => {
+                        await storage
+                        .ref(`images/${appName}/`)
+                        .child(img.name)
+                        .getDownloadURL()
+                        .then(urls => {
+                            setUrls(prevState => [...prevState,urls]);
+                        });
+                    }
+                )
+            })
             store.add({
                 app_name:appName,
                 app_ver:appVer,
                 title_app_keyword:titleKeyword,
                 app_keyword:keywords,
-                keyword:researchKeywords
-
+                keyword:researchKeywords,
+                
             })
             setAppName('');
             setAppVer('');
-        }catch(e) {
-            console.log(e);
-        }
+
+
     };
+
+
 
     const handleKeyword = e => {
         setTitleKeyword(e.target.innerText); 
@@ -68,6 +128,7 @@ const UploadModal = ({keywords}) => {
     return (
         <>
             <div>
+                -------------
                 <div>이미지 등록</div>
                 
                 <form onSubmit={onSubmit}>
@@ -77,6 +138,7 @@ const UploadModal = ({keywords}) => {
                 name="app"
                 value={appName}
                 onChange={onChange}
+
                 />
 
                 <div>앱 버전</div>
@@ -85,6 +147,7 @@ const UploadModal = ({keywords}) => {
                 name="ver"
                 value={appVer}
                 onChange={onChange}
+                
                 />
 
                 <ul>
@@ -96,12 +159,13 @@ const UploadModal = ({keywords}) => {
                         {keyword}
                     </li>)}
                 </ul>
-
+                    -----------
                 <div>집중탐구 키워드</div> 
+
                 <input 
                 type="text"
                 name='researchKeyword'
-                vaule={researchInput}
+                value={researchInput}
                 onChange={onChange}
                 onKeyDown={onKeyDown}
                 />
@@ -113,12 +177,30 @@ const UploadModal = ({keywords}) => {
                 </div>
                 )}</div>
 
+                -----
+                <input 
+                accept="image/*"
+                type="file" 
+                multiple
+                id="file"
+                name="img"
+                onChange={onChange}
+                ref={fileInput}
+                
+                />
+
                 <input type="submit"/>
                 </form>
-
-            
-               
-
+                
+                <button onClick={test}>dd</button>
+             
+             {urls.map((url,i) =>(
+                 <img
+                 key={i}
+                 style={{width:'300px',height:'300px'}}
+                 src={url}
+                 />
+             ))}
             </div>
         </>
     );

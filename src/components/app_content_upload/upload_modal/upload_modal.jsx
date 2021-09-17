@@ -1,16 +1,20 @@
-import React, { useState } from 'react';
+import React, { useRef, useState } from 'react';
 import style from './upload_modal.module.css';
-import {firestore} from '../../../service/firebase';
+import {firestore, storage} from '../../../service/firebase';
 
 const UploadModal = ({keywords}) => {
 
     const store = firestore.collection('appContent');
+    const fileInput = useRef();
 
     const [appName,setAppName] = useState('');
     const [appVer,setAppVer] = useState('');
     const [titleKeyword, setTitleKeyword] = useState('');
     const [researchInput,setResearchInput] = useState('');
     const [researchKeywords,setResearchKeywords] = useState([]);
+    const [imgs,setImgs] = useState([]);
+    const [preview,setPreview] = useState([]);
+    const [urls,setUrls] = useState([]);
 
 
     const onChange = e => {
@@ -21,39 +25,69 @@ const UploadModal = ({keywords}) => {
             setAppVer(value);
         }else if(name === 'researchKeyword') {
             setResearchInput(value);
-        }
+        }else if(name === 'img') {
+            for(let i = 0; i <e.target.files.length; i++) {
+                const newImgs = e.target.files[i];
+                newImgs['id'] = Math.random();
+                setImgs(prevState => [...prevState,newImgs]);
+                try {
+                   const createUrl = URL.createObjectURL(newImgs);
+                   setPreview(prevImgs => prevImgs.concat(createUrl));
+                   URL.revokeObjectURL(newImgs);
 
+                }catch(err) {
+                    console.log('image preview error',err)
+                }
+            }
+        }
     };
+
 
     const onKeyDown = e => {
         const {key} = e;
         const trimmedInput = researchInput.trim();
 
-        if (key === ',' && trimmedInput.length && !keywords.includes(trimmedInput)) {
+        if (key === ',' && trimmedInput.length && !researchKeywords.includes(trimmedInput)) {
             e.preventDefault();
             setResearchKeywords(prevState => [...prevState, trimmedInput]);
             setResearchInput('');
+
           }
     };
 
 
     const onSubmit = async(e) => {
         e.preventDefault();
-        try {
-            store.add({
-                app_name:appName,
-                app_ver:appVer,
-                title_app_keyword:titleKeyword,
-                app_keyword:keywords,
-                keyword:researchKeywords
 
+            const promises = imgs.map(img => {
+                const ref = storage.ref(`images/${appName}/${appVer}/${img.name}`);
+                return ref 
+                .put(img)
+                .then(()=>ref.getDownloadURL())
+            });
+
+            Promise.all(promises)
+            .then((urls) => {
+                store.add({
+                    app_name:appName,
+                    app_ver:appVer,
+                    title_app_keyword:titleKeyword,
+                    app_keyword:keywords,
+                    keyword:researchKeywords,
+                    imgs:urls
+                    
+                })
+                setUrls(prevState => [prevState,...urls]);
+                setAppName('');
+                setAppVer('');
+            
+    
             })
-            setAppName('');
-            setAppVer('');
-        }catch(e) {
-            console.log(e);
-        }
+          .catch(err => console.log(err));
+
     };
+
+
 
     const handleKeyword = e => {
         setTitleKeyword(e.target.innerText); 
@@ -63,11 +97,18 @@ const UploadModal = ({keywords}) => {
         setResearchKeywords(prevState => prevState.filter((keyword,i)=> i !== e))
     }
 
+    const deletePreview = e => {
+        setPreview(prevState => prevState.filter((img,i) => i !==e))
+        setImgs(prevState => prevState.filter((img,i) =>i !==e))
+    }
+
+
 
 
     return (
         <>
             <div>
+                -------------
                 <div>이미지 등록</div>
                 
                 <form onSubmit={onSubmit}>
@@ -77,6 +118,7 @@ const UploadModal = ({keywords}) => {
                 name="app"
                 value={appName}
                 onChange={onChange}
+
                 />
 
                 <div>앱 버전</div>
@@ -85,6 +127,7 @@ const UploadModal = ({keywords}) => {
                 name="ver"
                 value={appVer}
                 onChange={onChange}
+                
                 />
 
                 <ul>
@@ -96,12 +139,13 @@ const UploadModal = ({keywords}) => {
                         {keyword}
                     </li>)}
                 </ul>
-
+                    -----------
                 <div>집중탐구 키워드</div> 
+
                 <input 
                 type="text"
                 name='researchKeyword'
-                vaule={researchInput}
+                value={researchInput}
                 onChange={onChange}
                 onKeyDown={onKeyDown}
                 />
@@ -113,12 +157,39 @@ const UploadModal = ({keywords}) => {
                 </div>
                 )}</div>
 
+                -----
+                <input 
+                accept="image/*"
+                type="file" 
+                multiple
+                id="file"
+                name="img"
+                onChange={onChange}
+                ref={fileInput}
+                
+                />
+
                 <input type="submit"/>
                 </form>
-
             
-               
+            {preview.map((url,i) => (
+                <img
+                onClick={()=>deletePreview(i)}
+                style={{width:'300px',height:'300px'}}
+                src={url}
+                />
+            ))}
 
+
+                -------
+                
+             {urls.map((url,i) =>(
+                 <img
+                 key={i}
+                 style={{width:'300px',height:'300px'}}
+                 src={url}
+                 />
+             ))}
             </div>
         </>
     );

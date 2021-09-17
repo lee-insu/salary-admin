@@ -15,6 +15,7 @@ const UploadModal = ({keywords}) => {
     const [imgs,setImgs] = useState([]);
     const [preview,setPreview] = useState([]);
     const [urls,setUrls] = useState([]);
+    const [counter,setCounter] =useState(0);
 
 
     const onChange = e => {
@@ -32,8 +33,9 @@ const UploadModal = ({keywords}) => {
                 setImgs(prevState => [...prevState,newImgs]);
                 try {
                    const createUrl = URL.createObjectURL(newImgs);
-                   setPreview(prevImgs => prevImgs.concat(createUrl));
+                   setPreview(prevState => prevState.concat(createUrl));
                    URL.revokeObjectURL(newImgs);
+                   console.log(newImgs);
 
                 }catch(err) {
                     console.log('image preview error',err)
@@ -97,8 +99,13 @@ const UploadModal = ({keywords}) => {
         setResearchKeywords(prevState => prevState.filter((keyword,i)=> i !== e))
     }
 
-    const deletePreview = e => {
+    const deleteImages = e => {
         setPreview(prevState => prevState.filter((img,i) => i !==e))
+        setImgs(prevState => prevState.filter((img,i) =>i !==e))
+    }
+
+    const handleInput = () => {
+        setCounter(counter + 1);
     }
 
 
@@ -172,23 +179,50 @@ const UploadModal = ({keywords}) => {
                 </form>
             
             {preview.map((url,i) => (
-                <img
-                onClick={()=>deletePreview(i)}
+                <div>
+                    <img
+                key={i}
                 style={{width:'300px',height:'300px'}}
                 src={url}
                 />
+                <button onClick={()=>deleteImages(i)}>x</button>
+
+                </div>
+                
             ))}
 
+                <div>
+                    <button onClick={handleInput}>input add</button>
 
-                -------
-                
-             {urls.map((url,i) =>(
+                    {Array.from(Array(counter)).map((c,i)=> {
+                        return (
+                            <input 
+                            key={c}
+                            type="text"
+                            />
+                        )
+                    })}
+
+                </div>
+
+
+
+
+
+
+                <div>
+                    ---result 
+                    {urls.map((url,i) =>(
                  <img
                  key={i}
                  style={{width:'300px',height:'300px'}}
                  src={url}
                  />
              ))}
+
+                </div>
+                
+             
             </div>
         </>
     );

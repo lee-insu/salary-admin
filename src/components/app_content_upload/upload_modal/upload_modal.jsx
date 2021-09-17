@@ -13,6 +13,7 @@ const UploadModal = ({keywords}) => {
     const [researchInput,setResearchInput] = useState('');
     const [researchKeywords,setResearchKeywords] = useState([]);
     const [imgs,setImgs] = useState([]);
+    const [preview,setPreview] = useState([]);
     const [urls,setUrls] = useState([]);
 
 
@@ -29,9 +30,19 @@ const UploadModal = ({keywords}) => {
                 const newImgs = e.target.files[i];
                 newImgs['id'] = Math.random();
                 setImgs(prevState => [...prevState,newImgs]);
+                try {
+                   const createUrl = URL.createObjectURL(newImgs);
+                   setPreview(prevImgs => prevImgs.concat(createUrl));
+                   URL.revokeObjectURL(newImgs);
+
+                }catch(err) {
+                    console.log('image preview error',err)
+                }
             }
         }
     };
+
+
     const onKeyDown = e => {
         const {key} = e;
         const trimmedInput = researchInput.trim();
@@ -45,71 +56,34 @@ const UploadModal = ({keywords}) => {
     };
 
 
-    const test = (e) => {
-        e.preventDefault();
-        console.log(imgs);
-        // const promises = [];
-        // imgs.map(img => {
-        //     const upload = storage.ref(`images/${appName}/${img.name}`).put(img);
-        //     promises.push(upload);
-        //     upload.on(
-        //         "state_changed",
-        //         snapshot => {},
-        //         error => {
-        //             console.log(error);
-        //         },
-        //         async() => {
-        //             await storage
-        //             .ref(`images/${appName}/`)
-        //             .child(img.name)
-        //             .getDownloadURL()
-        //             .then(urls => {
-        //                 setUrls(prevState => [...prevState,urls]);
-        //             });
-        //         }
-        //     )
-
-        // })
-        // Promise.all(promises)
-        // .then(()=> alert('suc'))
-        // .catch((e)=> console.log(e))
-    }
-
     const onSubmit = async(e) => {
         e.preventDefault();
 
-            const promises = [];
-            imgs.map(img => {
-                const upload = storage.ref(`images/${appName}/${appVer}/${img.name}`).put(img);
-                promises.push(upload);
-                upload.on(
-                    "state_changed",
-                    snapshot => {},
-                    error => {
-                        console.log(error);
-                    },
-                    async() => {
-                        await storage
-                        .ref(`images/${appName}/`)
-                        .child(img.name)
-                        .getDownloadURL()
-                        .then(urls => {
-                            setUrls(prevState => [...prevState,urls]);
-                        });
-                    }
-                )
-            })
-            store.add({
-                app_name:appName,
-                app_ver:appVer,
-                title_app_keyword:titleKeyword,
-                app_keyword:keywords,
-                keyword:researchKeywords,
-                
-            })
-            setAppName('');
-            setAppVer('');
+            const promises = imgs.map(img => {
+                const ref = storage.ref(`images/${appName}/${appVer}/${img.name}`);
+                return ref 
+                .put(img)
+                .then(()=>ref.getDownloadURL())
+            });
 
+            Promise.all(promises)
+            .then((urls) => {
+                store.add({
+                    app_name:appName,
+                    app_ver:appVer,
+                    title_app_keyword:titleKeyword,
+                    app_keyword:keywords,
+                    keyword:researchKeywords,
+                    imgs:urls
+                    
+                })
+                setUrls(prevState => [prevState,...urls]);
+                setAppName('');
+                setAppVer('');
+            
+    
+            })
+          .catch(err => console.log(err));
 
     };
 
@@ -122,6 +96,11 @@ const UploadModal = ({keywords}) => {
     const deleteKeyword = e => {
         setResearchKeywords(prevState => prevState.filter((keyword,i)=> i !== e))
     }
+
+    const deletePreview = e => {
+        setPreview(prevState => prevState.filter((img,i) => i !==e))
+    }
+
 
 
 
@@ -191,9 +170,18 @@ const UploadModal = ({keywords}) => {
 
                 <input type="submit"/>
                 </form>
+            
+            {preview.map((url,i) => (
+                <img
+                onClick={()=>deletePreview(i)}
+                style={{width:'300px',height:'300px'}}
+                src={url}
+                />
+            ))}
+
+
+                -------
                 
-                <button onClick={test}>dd</button>
-             
              {urls.map((url,i) =>(
                  <img
                  key={i}

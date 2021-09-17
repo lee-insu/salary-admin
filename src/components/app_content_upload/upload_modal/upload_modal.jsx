@@ -99,6 +99,7 @@ const UploadModal = ({keywords}) => {
 
     const deletePreview = e => {
         setPreview(prevState => prevState.filter((img,i) => i !==e))
+        setImgs(prevState => prevState.filter((img,i) =>i !==e))
     }
 
 

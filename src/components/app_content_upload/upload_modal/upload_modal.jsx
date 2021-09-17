@@ -102,12 +102,6 @@ const UploadModal = ({keywords}) => {
     const deleteImages = e => {
         setPreview(prevState => prevState.filter((img,i) => i !==e))
         setImgs(prevState => prevState.filter((img,i) =>i !==e))
-    }
-
-    const handleInput = () => {
-        setCounter(counter + 1);
-    }
-
 
 
 

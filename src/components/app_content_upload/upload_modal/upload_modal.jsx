@@ -5,6 +5,7 @@ import {firestore, storage} from '../../../service/firebase';
 const UploadModal = ({keywords}) => {
 
     const store = firestore.collection('appContent');
+    const imgStore = firestore.collection('imgs');
     const fileInput = useRef();
 
     const [appName,setAppName] = useState('');
@@ -15,7 +16,7 @@ const UploadModal = ({keywords}) => {
     const [imgs,setImgs] = useState([]);
     const [preview,setPreview] = useState([]);
     const [urls,setUrls] = useState([]);
-    const [counter,setCounter] =useState(0);
+    const [subText,setSubText] =useState('');
 
 
     const onChange = e => {
@@ -26,21 +27,6 @@ const UploadModal = ({keywords}) => {
             setAppVer(value);
         }else if(name === 'researchKeyword') {
             setResearchInput(value);
-        }else if(name === 'img') {
-            for(let i = 0; i <e.target.files.length; i++) {
-                const newImgs = e.target.files[i];
-                newImgs['id'] = Math.random();
-                setImgs(prevState => [...prevState,newImgs]);
-                try {
-                   const createUrl = URL.createObjectURL(newImgs);
-                   setPreview(prevState => prevState.concat(createUrl));
-                   URL.revokeObjectURL(newImgs);
-                   console.log(newImgs);
-
-                }catch(err) {
-                    console.log('image preview error',err)
-                }
-            }
         }
     };
 
@@ -60,36 +46,16 @@ const UploadModal = ({keywords}) => {
 
     const onSubmit = async(e) => {
         e.preventDefault();
-
-            const promises = imgs.map(img => {
-                const ref = storage.ref(`images/${appName}/${appVer}/${img.name}`);
-                return ref 
-                .put(img)
-                .then(()=>ref.getDownloadURL())
-            });
-
-            Promise.all(promises)
-            .then((urls) => {
-                store.add({
-                    app_name:appName,
-                    app_ver:appVer,
-                    title_app_keyword:titleKeyword,
-                    app_keyword:keywords,
-                    keyword:researchKeywords,
-                    imgs:urls
-                    
-                })
-                setUrls(prevState => [prevState,...urls]);
-                setAppName('');
-                setAppVer('');
-        
-    
-            })
-          .catch(err => console.log(err));
-
+        store.doc(`${appName}${appVer}`).set({
+            app_name:appName,
+            app_ver:appVer,
+            title_app_keyword:titleKeyword,
+            app_keyword:keywords,
+            keyword:researchKeywords
+            
+        })
+        alert('suc');
     };
-
-
 
     const handleKeyword = e => {
         setTitleKeyword(e.target.innerText); 
@@ -104,10 +70,60 @@ const UploadModal = ({keywords}) => {
         setImgs(prevState => prevState.filter((img,i) =>i !==e))
     }
 
-    const handleInput = () => {
-        setCounter(counter + 1);
+
+    const imgChange = e => {
+        const {target:{name,value}} = e;
+        if(name === 'subtext') {
+            setSubText(value)
+        }else if(name === 'img') {
+            for(let i = 0; i <e.target.files.length; i++) {
+                const newImgs = e.target.files[i];
+                newImgs['id'] = Math.random();
+                setImgs(prevState => [...prevState,newImgs]);
+                try {
+                   const createUrl = URL.createObjectURL(newImgs);
+                   setPreview(prevState => prevState.concat(createUrl));
+                   URL.revokeObjectURL(newImgs);
+
+                }catch(err) {
+                    console.log('image preview error',err)
+                }
+            }
+        }
+
     }
 
+    const imgSubmit = async(e) => {
+        e.preventDefault();
+
+            const promises = imgs.map(img => {
+                const ref = storage.ref(`images/${appName}/${appVer}/${img.name}`);
+                return ref 
+                .put(img)
+                .then(()=>ref.getDownloadURL())
+            });
+
+            Promise.all(promises)
+            .then((urls) => {
+                imgStore.doc(`${appName}${appVer}`).collection('img').add({
+                    app_name:appName,
+                    app_ver:appVer,
+                    sub:subText,
+                    imgs:urls
+                    
+                })
+                
+                alert('suc!');
+                setUrls(prevState => [prevState,...urls]);
+                setImgs([]);
+                setPreview([]);
+                setSubText('');
+            })
+          .catch(err => console.log(err));
+          console.log(imgs);
+          console.log(preview);
+
+    }
 
 
 
@@ -163,16 +179,30 @@ const UploadModal = ({keywords}) => {
                 </div>
                 )}</div>
 
-                -----
+                ----
+
+                <input type="submit"/>
+                </form>
+
+
+                <form onSubmit={imgSubmit}>
+
+                <input 
+                type="text"
+                name="subtext"
+                value={subText}
+                onChange={imgChange}
+                />
+
+
                 <input 
                 accept="image/*"
                 type="file" 
                 multiple
                 id="file"
                 name="img"
-                onChange={onChange}
+                onChange={imgChange}
                 ref={fileInput}
-                
                 />
 
                 <input type="submit"/>
@@ -191,26 +221,7 @@ const UploadModal = ({keywords}) => {
                 
             ))}
 
-                <div>
-                    <button onClick={handleInput}>input add</button>
-
-                    {Array.from(Array(counter)).map((c,i)=> {
-                        return (
-                            <input 
-                            key={c}
-                            type="text"
-                            />
-                        )
-                    })}
-
-                </div>
-
-
-
-
-
-
-                <div>
+                {/* <div>
                     ---result 
                     {urls.map((url,i) =>(
                  <img
@@ -220,7 +231,7 @@ const UploadModal = ({keywords}) => {
                  />
              ))}
 
-                </div>
+                </div> */}
                 
              
             </div>

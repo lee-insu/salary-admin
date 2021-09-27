@@ -6,6 +6,7 @@ const UploadModal = ({keywords}) => {
 
     const store = firestore.collection('appContent');
     const imgStore = firestore.collection('imgs');
+    const keywordStore = firestore.collection('keyword');
     const fileInput = useRef();
 
     const [appName,setAppName] = useState('');
@@ -54,6 +55,10 @@ const UploadModal = ({keywords}) => {
             keyword:researchKeywords
             
         })
+        keywordStore.add({
+            app_keyword:keywords
+        })
+        
         alert('suc');
     };
 
@@ -212,7 +217,7 @@ const UploadModal = ({keywords}) => {
                 <div>
                     <img
                 key={i}
-                style={{width:'300px',height:'300px'}}
+                style={{width:'223px',height:'482px'}}
                 src={url}
                 />
                 <button onClick={()=>deleteImages(i)}>x</button>

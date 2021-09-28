@@ -1,12 +1,11 @@
-import React, { useRef, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import style from './upload_modal.module.css';
 import {firestore, storage} from '../../../service/firebase';
 
-const UploadModal = ({keywords}) => {
+const UploadModal = () => {
 
-    const store = firestore.collection('appContent');
+    const store = firestore.collection('appKeyword');
     const imgStore = firestore.collection('imgs');
-    const keywordStore = firestore.collection('keyword');
     const fileInput = useRef();
 
     const [appName,setAppName] = useState('');
@@ -14,6 +13,7 @@ const UploadModal = ({keywords}) => {
     const [titleKeyword, setTitleKeyword] = useState('');
     const [researchInput,setResearchInput] = useState('');
     const [researchKeywords,setResearchKeywords] = useState([]);
+    const [keywords,setKeywords] = useState([]);
     const [imgs,setImgs] = useState([]);
     const [preview,setPreview] = useState([]);
     const [urls,setUrls] = useState([]);
@@ -47,24 +47,29 @@ const UploadModal = ({keywords}) => {
 
     const onSubmit = async(e) => {
         e.preventDefault();
-        store.doc(`${appName}${appVer}`).set({
-            app_name:appName,
-            app_ver:appVer,
-            title_app_keyword:titleKeyword,
-            app_keyword:keywords,
-            keyword:researchKeywords
-            
-        })
-        keywordStore.add({
-            app_keyword:keywords
-        })
-        
-        alert('suc');
+        if(titleKeyword) {
+            store.doc(`${titleKeyword}`).set({
+                active:true
+            })
+            store.doc(`${titleKeyword}`).collection('appContents').doc(`${appName}${appVer}`).set({
+                app_name:appName,
+                app_ver:appVer,
+                title_app_keyword:titleKeyword,
+                keyword:researchKeywords,
+                active:true,
+                
+            })
+            alert('suc');
+
+        }
     };
 
     const handleKeyword = e => {
-        setTitleKeyword(e.target.innerText); 
+        const keyword = e.target.innerText
+        setTitleKeyword(keyword);
+    
     }
+
 
     const deleteKeyword = e => {
         setResearchKeywords(prevState => prevState.filter((keyword,i)=> i !== e))
@@ -102,7 +107,7 @@ const UploadModal = ({keywords}) => {
         e.preventDefault();
 
             const promises = imgs.map(img => {
-                const ref = storage.ref(`images/${appName}/${appVer}/${img.name}`);
+                const ref = storage.ref(`images/${titleKeyword}/${appName}/${appVer}/${img.name}`);
                 return ref 
                 .put(img)
                 .then(()=>ref.getDownloadURL())
@@ -110,7 +115,7 @@ const UploadModal = ({keywords}) => {
 
             Promise.all(promises)
             .then((urls) => {
-                imgStore.doc(`${appName}${appVer}`).collection('img').add({
+                imgStore.doc(`${titleKeyword}`).collection('img').doc(`${appName}${appVer}`).collection('list').add({
                     app_name:appName,
                     app_ver:appVer,
                     sub:subText,
@@ -130,7 +135,24 @@ const UploadModal = ({keywords}) => {
 
     }
 
+    useEffect(()=> {
+        store.onSnapshot(snapshot => {
+            const array = snapshot.docs.map(doc => ({
+                id:doc.id,
+            }));
+            setKeywords(array);
 
+        })
+    },[])
+
+    const keyword = keywords.map(keyword => 
+        <li 
+        key={keyword.id}
+        onClick={handleKeyword}
+        >
+            {keyword.id}
+        </li>
+        )
 
     return (
         <>
@@ -158,14 +180,12 @@ const UploadModal = ({keywords}) => {
                 />
 
                 <ul>
-                    {keywords.map(keyword => 
-                    <li 
-                    key={keyword.id}
-                    className={style.active}
-                    onClick={handleKeyword}>
-                        {keyword}
-                    </li>)}
+                    {keyword}
                 </ul>
+
+
+
+               
                     -----------
                 <div>집중탐구 키워드</div> 
 

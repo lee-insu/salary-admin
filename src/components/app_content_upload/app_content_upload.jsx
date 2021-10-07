@@ -7,7 +7,7 @@ const AppContentUpload = () => {
 
     const [input,setInput] = useState('');
     const [keywords,setKeywords] = useState([]);
-    const store = firestore.collection('appKeyword');
+    const fireStore = firestore.collection('appKeyword');
 
     const onChange = e => {
        const {value} =e.target;
@@ -21,7 +21,7 @@ const AppContentUpload = () => {
         if (key === ',' && trimmedInput.length && !keywords.includes(trimmedInput)) {
             e.preventDefault();
             try{
-                store.doc(`${trimmedInput}`).set({
+                fireStore.doc(`${trimmedInput}`).set({
                     active:false
                 })
                 setInput('');
@@ -37,7 +37,7 @@ const AppContentUpload = () => {
 
         e.preventDefault();
         try{
-            store.doc(`${trimmedInput}`).set({
+            fireStore.doc(`${trimmedInput}`).set({
                 active:false
             })
             setInput('');
@@ -51,10 +51,9 @@ const AppContentUpload = () => {
     const deleteKeyword = async(e) => {
         const del = window.confirm('are you sure delete keyword in contents?')
         if(del) {
-            await store.doc(e).delete();
+            await fireStore.doc(e).delete();
             if(del) {
-                const appStore = store.doc(e).collection('appContents');
-                const imgStore = firestore.collection('imgs').doc(e).collection('img');
+                const appStore = fireStore.doc(e).collection('appContents');
                 appStore.get().then(keyword => {
                     const size = keyword.size;
                     for(let i = 0; i < size; i++) {
@@ -71,7 +70,7 @@ const AppContentUpload = () => {
 
 
     useEffect(()=> {
-        store.onSnapshot(snapshot => {
+        fireStore.onSnapshot(snapshot => {
             const array = snapshot.docs.map(doc => ({
                 id:doc.id
             }));

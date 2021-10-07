@@ -4,7 +4,7 @@ import {firestore, storage} from '../../../service/firebase';
 
 const UploadModal = () => {
 
-    const store = firestore.collection('appKeyword');
+    const fireStore = firestore.collection('appKeyword');
     const imgStore = firestore.collection('imgs');
     const fileInput = useRef();
 
@@ -17,6 +17,7 @@ const UploadModal = () => {
     const [imgs,setImgs] = useState([]);
     const [preview,setPreview] = useState([]);
     const [urls,setUrls] = useState([]);
+    const [getImgs,getImgsData] = useState([]);
     const [subText,setSubText] =useState('');
 
 
@@ -48,14 +49,14 @@ const UploadModal = () => {
     const onSubmit = async(e) => {
         e.preventDefault();
         if(titleKeyword) {
-            store.doc(`${titleKeyword}`).set({
+            fireStore.doc(`${titleKeyword}`).set({
                 active:true
             })
-            store.doc(`${titleKeyword}`).collection('appContents').doc(`${appName}${appVer}`).set({
+            fireStore.doc(`${titleKeyword}`).collection('appContents').doc(`${appName}${appVer}`).set({
                 app_name:appName,
                 app_ver:appVer,
                 title_app_keyword:titleKeyword,
-                keyword:researchKeywords,
+                research_keyword:researchKeywords,
                 active:true,
                 
             })
@@ -119,7 +120,8 @@ const UploadModal = () => {
                     app_name:appName,
                     app_ver:appVer,
                     sub:subText,
-                    imgs:urls
+                    imgs:urls,
+                    time: new Date()
                     
                 })
                 
@@ -136,14 +138,25 @@ const UploadModal = () => {
     }
 
     useEffect(()=> {
-        store.onSnapshot(snapshot => {
+        fireStore.onSnapshot(snapshot => {
             const array = snapshot.docs.map(doc => ({
                 id:doc.id,
             }));
             setKeywords(array);
-
         })
-    },[])
+        if(titleKeyword && appName && appVer) {
+            const imgStore = firestore.collection('imgs').doc(`${titleKeyword}`).collection('img').doc(`${appName}${appVer}`).collection('list');
+           imgStore.orderBy('time')
+           .onSnapshot(snapshot => {
+            const array = snapshot.docs.map(doc => ({
+                id:doc.id,
+                ...doc.data()
+            }));
+            getImgsData(array);
+        })
+        }
+
+    },[titleKeyword,appName,appVer])
 
     const keyword = keywords.map(keyword => 
         <li 
@@ -152,7 +165,17 @@ const UploadModal = () => {
         >
             {keyword.id}
         </li>
-        )
+        );
+
+    const getImg = getImgs.map(imgList => 
+    <li key={imgList.id}>
+        <div>{imgList.sub}</div>
+        {imgList.imgs.map(img => 
+            <img 
+            style={{width:'223px',height:'482px'}}
+            src={img} />
+            )}
+    </li>)
 
     return (
         <>
@@ -210,6 +233,11 @@ const UploadModal = () => {
                 </form>
 
 
+                <ul>
+                    {getImg}
+                </ul>
+
+
                 <form onSubmit={imgSubmit}>
 
                 <input 
@@ -232,6 +260,10 @@ const UploadModal = () => {
 
                 <input type="submit"/>
                 </form>
+
+            
+
+
             
             {preview.map((url,i) => (
                 <div>

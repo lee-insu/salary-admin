@@ -2,7 +2,7 @@ import React, { useEffect, useRef, useState } from 'react';
 import style from './upload_modal.module.css';
 import {firestore, storage} from '../../../service/firebase';
 
-const UploadModal = () => {
+const UploadModal = ({modalClose}) => {
 
     const fireStore = firestore.collection('appKeyword');
     const imgStore = firestore.collection('imgs');
@@ -132,10 +132,9 @@ const UploadModal = () => {
                 setSubText('');
             })
           .catch(err => console.log(err));
-          console.log(imgs);
-          console.log(preview);
 
     }
+
 
     useEffect(()=> {
         fireStore.onSnapshot(snapshot => {
@@ -178,9 +177,13 @@ const UploadModal = () => {
     </li>)
 
     return (
-        <>
-            <div>
-                -------------
+        <div className={style.modal_container}>
+            <div className={style.modal}>
+
+                <button
+                className={style.modal_btn} 
+                onClick={modalClose}>x</button>
+
                 <div>이미지 등록</div>
                 
                 <form onSubmit={onSubmit}>
@@ -207,9 +210,6 @@ const UploadModal = () => {
                 </ul>
 
 
-
-               
-                    -----------
                 <div>집중탐구 키워드</div> 
 
                 <input 
@@ -292,7 +292,7 @@ const UploadModal = () => {
                 
              
             </div>
-        </>
+        </div>
     );
 };
 

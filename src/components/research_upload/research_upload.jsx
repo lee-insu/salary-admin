@@ -4,6 +4,7 @@ import ResearchUploadModal from './research_upload_modal/research_upload_modal';
 
 const ResearchUpload = () => {
 
+    const [modalOpen,setModalOpen] = useState(false);
     const [input,setInput] = useState('');
     const [keywords,setKeywords] = useState([]);
     const fireStore = firestore.collection('researchKeyword');
@@ -52,6 +53,10 @@ const ResearchUpload = () => {
         }
     }
 
+    const modalClose = () => {
+        setModalOpen(!modalOpen);
+    }
+
 
 
     useEffect(()=> {
@@ -90,7 +95,9 @@ const ResearchUpload = () => {
         <ul>
             {keyword}
         </ul>
-            <ResearchUploadModal/>
+            <button onClick={modalClose}>컨텐츠 등록</button>
+            {modalOpen && <ResearchUploadModal modalClose={modalClose}/>}
+            
         </div>
     );
 };

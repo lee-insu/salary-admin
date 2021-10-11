@@ -1,33 +1,48 @@
-import React, { useEffect, useState } from 'react';
+import React, { useRef, useState } from 'react';
 import {firestore} from '../../../service/firebase';
 import { CKEditor } from "@ckeditor/ckeditor5-react";
 import ClassicEditor from "@ckeditor/ckeditor5-build-classic";
 import {storage} from '../../../service/firebase';
+import style from './research_upload_modal.module.css';
 
 
 
-const ResearchUploadModal = () => {
+
+const ResearchUploadModal = ({modalClose}) => {
 
     const [text,setText] = useState('');
     const [title,setTitle] = useState('');
     const [subTitle,setSubTitle] =useState('');
     const [input,setInput] = useState('');
     const [keywords,setKeywords] = useState([]);
+    const [year,setYear] = useState('');
+    const [month,setMonth] = useState('');
+    const [img,setImg] =useState(null);
+    const monthList = ["1","2","3","4","5","6","7","8","9","10","11","12"];
+    const fileInput =useRef();
     
 
     const fireStore = firestore.collection('researchKeyword');
 
     const onChange = e => {
         const {target:{name,value}} = e;
-        if(name === 'title') {
-            setTitle(value);
-        }else if(name === 'subTitle') {
-            setSubTitle(value);
-        }else if(name === 'keywords') {
-            setInput(value);
+        switch (name) {
+            case ('title'):
+                return setTitle(value);
+            case ('subTitle'):
+                return setSubTitle(value);
+            case ('keywords'):
+                return setInput(value);
+            case ('year'):
+                return setYear(value);
+            case ('month'):
+                return setMonth(value);   
+            case ('img'):
+                return setImg(e.target.files[0]);
+            default :
+                return value
         }
     };
-
 
     const onKeyDown = e => {
         const {key} = e;
@@ -47,8 +62,15 @@ const ResearchUploadModal = () => {
         fireStore.add({
             title,
             subTitle,
+            keywords,
+            year,
+            month,
+            img:img.name,
             text
         })
+        if(img !== null) {
+            storage.ref(`research/${title}/titleImg/${img.name}`).put(img);
+        }
         alert('suc')
         
     }
@@ -65,7 +87,6 @@ const ResearchUploadModal = () => {
         </li>
         )
 
-    console.log(text);
 
 
     const uploadAdapter = loader => {
@@ -103,7 +124,12 @@ const ResearchUploadModal = () => {
 
 
     return (
-        <div>
+    <div className={style.modal_container}>
+        <div className={style.modal}>
+            <button 
+            className={style.modal_btn}
+            onClick={modalClose}
+            >x</button>
             <div>컨텐츠 등록</div>
             <form onSubmit={onSubmit}>
                 <div>
@@ -142,10 +168,28 @@ const ResearchUploadModal = () => {
                     name="year"
                     onChange={onChange}
                     >
-                        <option value="2020">2020</option>
+                         <option>년</option>
                         <option value="2021">2021</option>
+                        <option value="2022">2022</option>
                     </select>
-                    <select name=""></select>
+                    <select 
+                    name="month"
+                    onChange={onChange}
+                    >
+                  {monthList.map(mon => <option value={mon}>{mon}</option>)}
+                    </select>
+                </div>
+
+                <div>
+                    <input 
+                    accept="image/*"
+                    id="file"
+                    type="file"
+                    name="img"
+                    onChange={onChange}
+                    ref={fileInput}
+                    />
+
                 </div>
 
                 <div>
@@ -168,6 +212,7 @@ const ResearchUploadModal = () => {
                 <input type="submit"/>
             </form>
         </div>
+    </div>
     );
 };
 

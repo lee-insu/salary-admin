@@ -5,6 +5,7 @@ import {firestore} from '../../service/firebase';
 
 const AppContentUpload = () => {
 
+    const [modalOpen,setModalOpen] = useState(false);
     const [input,setInput] = useState('');
     const [keywords,setKeywords] = useState([]);
     const fireStore = firestore.collection('appKeyword');
@@ -68,6 +69,9 @@ const AppContentUpload = () => {
         }
     }
 
+    const modalClose = () => {
+        setModalOpen(!modalOpen)
+    }
 
     useEffect(()=> {
         fireStore.onSnapshot(snapshot => {
@@ -101,8 +105,11 @@ const AppContentUpload = () => {
             <ul>
                 {keyword}
             </ul>
+            <button onClick={modalClose}>컨텐츠 등록</button>
+            {modalOpen && <UploadModal modalClose={modalClose}/>}
+            
 
-            <UploadModal  />
+           
         </div>
     );
 };

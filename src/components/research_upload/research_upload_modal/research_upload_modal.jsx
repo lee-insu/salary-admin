@@ -205,10 +205,6 @@ const ResearchUploadModal = ({modalClose}) => {
                     }}
                     />
                 </div>
-                
-                
-                --
-
                 <input type="submit"/>
             </form>
         </div>

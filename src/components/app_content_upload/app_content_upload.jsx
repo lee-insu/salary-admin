@@ -5,10 +5,13 @@ import {firestore} from '../../service/firebase';
 
 const AppContentUpload = () => {
 
-    const [modalOpen,setModalOpen] = useState(false);
+    const [contents,getContents] = useState([]);
     const [input,setInput] = useState('');
     const [keywords,setKeywords] = useState([]);
+    const [checkedItems,setCheckedItems] = useState([]);
     const fireStore = firestore.collection('appKeyword');
+    const [modalOpen,setModalOpen] = useState(false);
+
 
     const onChange = e => {
        const {value} =e.target;
@@ -69,9 +72,38 @@ const AppContentUpload = () => {
         }
     }
 
+
+
     const modalClose = () => {
         setModalOpen(!modalOpen)
     }
+
+
+    const checkHandler = (e) => {
+        const {target:{value,checked}} =e ;
+            if(checked) {
+                setCheckedItems(prevState => [...prevState,value])
+            }else {
+                setCheckedItems(checkedItems.filter(el => el !== value))
+            }
+    }
+
+
+
+    const handleDelete = () => {
+        const del = window.confirm('are you sure delete?')
+        if(del) {
+            for(let i = 0; i < checkedItems.length; i ++) {
+                keywords.map(keyword => {
+                    fireStore.doc(keyword.id).collection('appContents').doc(checkedItems[i]).delete()   
+                })
+            }
+        }
+        alert('suc!')
+        
+    }
+
+
 
     useEffect(()=> {
         fireStore.onSnapshot(snapshot => {
@@ -82,7 +114,19 @@ const AppContentUpload = () => {
         })
     },[])
 
-
+    useEffect(()=> {
+        keywords.forEach(keyword => {
+            fireStore.doc(keyword.id).collection('appContents')
+            .onSnapshot(snapshot=> {
+                const array = snapshot.docs.map(doc => ({
+                    id:doc.id,
+                    ...doc.data(),
+                }))
+                getContents(prevState => [...prevState,Object.assign(array)]);
+                
+            })
+        })
+    },[keywords])
 
     const keyword = keywords.map(keyword => 
         <li key={keyword.id}>
@@ -90,6 +134,21 @@ const AppContentUpload = () => {
             <button onClick={()=>deleteKeyword(keyword.id)}>x</button>
         </li>
         )
+
+    const contentList = contents.flat();
+    
+    const content = contentList.map(content => 
+        <li key={content.id}>
+            <input 
+            type="checkbox"
+            value={content.id}
+            onChange={checkHandler}
+            />
+            {content.app_name}
+        </li>
+        )
+
+
 
     return (
         <div className={style.session}>
@@ -105,8 +164,16 @@ const AppContentUpload = () => {
             <ul>
                 {keyword}
             </ul>
+            <button onClick={handleDelete}>컨텐츠 삭제</button>
             <button onClick={modalClose}>컨텐츠 등록</button>
             {modalOpen && <UploadModal modalClose={modalClose}/>}
+
+            <div>
+                <div>앱 컨텐츠 목록</div>    
+                <ul>    
+                    {content}
+                </ul>    
+            </div>
             
 
            

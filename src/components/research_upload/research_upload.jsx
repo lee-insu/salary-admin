@@ -6,7 +6,9 @@ const ResearchUpload = () => {
 
     const [modalOpen,setModalOpen] = useState(false);
     const [input,setInput] = useState('');
+    const [contents,getContents] = useState([]);
     const [keywords,setKeywords] = useState([]);
+    const [checkedItems,setCheckItems] = useState([]);
     const fireStore = firestore.collection('researchKeyword');
 
     const onChange = e => {
@@ -46,36 +48,83 @@ const ResearchUpload = () => {
     };
 
 
-    const deleteKeyword = async(e) => {
+    const handleDeleteKeyword = e => {
         const del = window.confirm('are you sure delete research keyword in contents?')
         if(del) {
-            await fireStore.doc(e).delete();
+            fireStore.where('keywords',"array-contains",e)
+            .onSnapshot(snapshot => {
+                const array = snapshot.docs.map(doc => ({
+                    id:doc.id
+                }))
+                for(let i = 0; i < array.length; i++) {
+                    fireStore.doc(array[i].id).delete();
+                }
+            });
         }
+        alert('suc');
     }
 
     const modalClose = () => {
         setModalOpen(!modalOpen);
     }
 
+    const handleDelete = () => {
+        const del = window.confirm('are you sure delete?')
+        if(del) {
+            for(let i = 0; i < checkedItems.length; i++) {
+                fireStore.doc(checkedItems[i]).delete();
+            }
+        }
+        alert('suc');
+    };
+    
+    const checkHandler = e => {
+        const {target:{value,checked}} = e;
+        if(checked) {
+            setCheckItems(prevState => [...prevState,value]);
+        }else {
+            setCheckItems(checkedItems.filter(el => el !== value))
+        }
+    }
+
+
 
 
     useEffect(()=> {
         fireStore.onSnapshot(snapshot => {
             const array = snapshot.docs.map(doc => ({
-                id:doc.id
+                id:doc.id,
+                ...doc.data()
             }));
-            setKeywords(array)
+            getContents(array);
+            for(let i = 0; i <array.length; i++) {
+                const arr = array[i].keywords;
+                setKeywords(prevState => [...prevState,arr]);
+            }
         })
     },[])
 
+    const keywordFlat = keywords.flat();
+    const keywordSet = new Set(keywordFlat);
+    const keywordArr = [...keywordSet];
 
-  const keyword = keywords.map(keyword => 
-    <li key={keyword.id}>
-        {keyword.id}
-        <button onClick={()=>deleteKeyword(keyword.id)}>x</button>
+
+    const keyword = keywordArr.map(keyword => 
+        <li key={keyword}>
+            <button onClick={()=>handleDeleteKeyword(keyword)}>x</button>
+            {keyword}</li>
+        )
+
+    const content = contents.map(content => 
+        <li key={content.id}>
+            <input 
+            type="checkbox"
+            value={content.id}
+            onChange={checkHandler}
+            />
+            <h3>{content.title}</h3>
         </li>
-    )
-
+        )
 
 
 
@@ -95,8 +144,16 @@ const ResearchUpload = () => {
         <ul>
             {keyword}
         </ul>
+            <button onClick={handleDelete}>컨텐츠 삭제</button>
             <button onClick={modalClose}>컨텐츠 등록</button>
             {modalOpen && <ResearchUploadModal modalClose={modalClose}/>}
+
+            <div>
+                <div>앱 컨텐츠 등록</div>
+                <ul>
+                    {content}
+                </ul>
+            </div>
             
         </div>
     );

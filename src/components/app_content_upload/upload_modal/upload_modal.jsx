@@ -50,14 +50,14 @@ const UploadModal = ({modalClose}) => {
         e.preventDefault();
         if(titleKeyword) {
             fireStore.doc(`${titleKeyword}`).set({
-                active:true
+                active:false
             })
             fireStore.doc(`${titleKeyword}`).collection('appContents').doc(`${appName}${appVer}`).set({
                 app_name:appName,
                 app_ver:appVer,
                 title_app_keyword:titleKeyword,
                 research_keyword:researchKeywords,
-                active:true,
+                active:false,
                 
             })
             alert('suc');

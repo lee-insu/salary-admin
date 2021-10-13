@@ -80,7 +80,7 @@ const AppContentUpload = () => {
 
 
     const checkHandler = (e) => {
-        const {target:{value,checked}} =e ;
+        const {target:{value,checked}} = e;
             if(checked) {
                 setCheckedItems(prevState => [...prevState,value])
             }else {
@@ -147,7 +147,7 @@ const AppContentUpload = () => {
             value={content.id}
             onChange={checkHandler}
             />
-            {content.app_name}
+            {content.app_name}{content.app_ver}
         </li>
         )
 

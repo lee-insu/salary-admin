@@ -60,6 +60,7 @@ const ResearchUploadModal = ({modalClose}) => {
     const onSubmit = async(e) => {
         e.preventDefault();
         fireStore.add({
+            active:false,
             title,
             subTitle,
             keywords,

@@ -120,7 +120,7 @@ const AppContentUpload = () => {
             .onSnapshot(snapshot=> {
                 const array = snapshot.docs.map(doc => ({
                     id:doc.id,
-                    ...doc.data(),
+                    ...doc.data()
                 }))
                 getContents(prevState => [...prevState,Object.assign(array)]);
                 

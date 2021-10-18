@@ -34,34 +34,7 @@ const Editor = () => {
         }
     }
 
-    function uploadAdapterㅁ(loader) {
-        return {
-          upload: () => {
-            return new Promise((resolve, reject) => {
-              const body = new FormData();
-              loader.file.then((file) => {
-                body.append("files", file);
-                // let headers = new Headers();
-                // headers.append("Origin", "http://localhost:3000");
-                fetch(`${API_URL}/${UPLOAD_ENDPOINT}`, {
-                  method: "post",
-                  body: body
-                  // mode: "no-cors"
-                })
-                  .then((res) => res.json())
-                  .then((res) => {
-                    resolve({
-                      default: `${API_URL}/${res.filename}`
-                    });
-                  })
-                  .catch((err) => {
-                    reject(err);
-                  });
-              });
-            });
-          }
-        };
-      }
+  
 
 
     

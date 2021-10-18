@@ -18,7 +18,7 @@ const ResearchUploadModal = ({modalClose}) => {
     const [year,setYear] = useState('');
     const [month,setMonth] = useState('');
     const [img,setImg] =useState(null);
-    const monthList = ["1","2","3","4","5","6","7","8","9","10","11","12"];
+    const monthList = ["월","1","2","3","4","5","6","7","8","9","10","11","12"];
     const fileInput =useRef();
     
 
@@ -59,19 +59,24 @@ const ResearchUploadModal = ({modalClose}) => {
 
     const onSubmit = async(e) => {
         e.preventDefault();
-        fireStore.add({
-            active:false,
-            title,
-            subTitle,
-            keywords,
-            year,
-            month,
-            img:img.name,
-            text
-        })
         if(img !== null) {
-            storage.ref(`research/${title}/titleImg/${img.name}`).put(img);
-        }
+            const ref = storage.ref(`research/${title}/titleImg/${img.name}`);
+            ref.put(img)
+            .then(()=>ref.getDownloadURL())
+            .then((url) => {
+                fireStore.add({
+                    active:false,
+                    title,
+                    subTitle,
+                    keywords,
+                    year,
+                    month,
+                    img:url,
+                    views:0,
+                    text
+                })
+            })
+        };
         alert('suc')
         
     }

@@ -1,6 +1,7 @@
 import React, { useEffect, useRef, useState } from 'react';
 import style from './upload_modal.module.css';
 import {firestore, storage} from '../../../service/firebase';
+import firebase from 'firebase/app';
 
 const UploadModal = ({modalClose}) => {
 
@@ -19,6 +20,8 @@ const UploadModal = ({modalClose}) => {
     const [urls,setUrls] = useState([]);
     const [getImgs,getImgsData] = useState([]);
     const [subText,setSubText] =useState('');
+    const [order,setOrder] = useState('');
+    const orderList = ['',1,2,3,4,5,6,7,8,9,10];
 
 
     const onChange = e => {
@@ -100,20 +103,21 @@ const UploadModal = ({modalClose}) => {
                     console.log('image preview error',err)
                 }
             }
+        }else if(name === 'order') {
+            setOrder(value)
         }
 
     }
 
     const imgSubmit = async(e) => {
         e.preventDefault();
-
             const promises = imgs.map(img => {
                 const ref = storage.ref(`images/${titleKeyword}/${appName}/${appVer}/${img.name}`);
                 return ref 
                 .put(img)
                 .then(()=>ref.getDownloadURL())
             });
-
+           
             Promise.all(promises)
             .then((urls) => {
                 imgStore.doc(`${titleKeyword}`).collection('img').doc(`${appName}${appVer}`).collection('list').add({
@@ -121,19 +125,20 @@ const UploadModal = ({modalClose}) => {
                     app_ver:appVer,
                     sub:subText,
                     imgs:urls,
-                    time: new Date()
-                    
+                    order,
                 })
-                
+
                 alert('suc!');
                 setUrls(prevState => [prevState,...urls]);
                 setImgs([]);
                 setPreview([]);
+                setOrder("");
                 setSubText('');
             })
           .catch(err => console.log(err));
 
     }
+
 
 
     useEffect(()=> {
@@ -246,6 +251,17 @@ const UploadModal = ({modalClose}) => {
                 value={subText}
                 onChange={imgChange}
                 />
+
+                <div>
+                    <div>순서</div>
+                    <select
+                    name="order"
+                    onChange={imgChange}
+                    >
+                        {orderList.map(order => <option value={order}>{order}번</option>)}
+
+                    </select>
+                </div>
 
 
                 <input 

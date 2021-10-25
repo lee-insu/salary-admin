@@ -20,9 +20,10 @@ const ResearchUploadModal = ({modalClose}) => {
     const [img,setImg] =useState(null);
     const monthList = ["월","1","2","3","4","5","6","7","8","9","10","11","12"];
     const fileInput =useRef();
-    
+
 
     const fireStore = firestore.collection('researchKeyword');
+    const fireStoreDate = firestore.collection('researchDate');
 
     const onChange = e => {
         const {target:{name,value}} = e;
@@ -64,18 +65,23 @@ const ResearchUploadModal = ({modalClose}) => {
             ref.put(img)
             .then(()=>ref.getDownloadURL())
             .then((url) => {
-                fireStore.add({
+                fireStoreDate.doc(`${year}년 ${month}월`).set({
+                    active:true,
+                })
+                fireStoreDate.doc(`${year}년 ${month}월`).collection('research').add({
                     active:false,
                     title,
                     subTitle,
                     keywords,
                     year,
                     month,
+                    date: new Date().getDate(),
                     img:url,
                     views:0,
                     text
                 })
             })
+      
         };
         alert('suc')
         

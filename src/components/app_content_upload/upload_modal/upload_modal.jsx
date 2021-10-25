@@ -294,7 +294,7 @@ const UploadModal = ({modalClose}) => {
                 
             ))}
 
-                {/* <div>
+                <div>
                     ---result 
                     {urls.map((url,i) =>(
                  <img
@@ -304,7 +304,7 @@ const UploadModal = ({modalClose}) => {
                  />
              ))}
 
-                </div> */}
+                </div>
                 
              
             </div>

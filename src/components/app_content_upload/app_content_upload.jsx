@@ -131,8 +131,8 @@ const AppContentUpload = () => {
 
  
 
-    const keyword = keywords.map(keyword => 
-        <li key={keyword.id}>
+    const keyword = keywords.map((keyword,i) => 
+        <li key={i}>
             {keyword.id}
             <button onClick={()=>deleteKeyword(keyword.id)}>x</button>
         </li>
@@ -140,8 +140,8 @@ const AppContentUpload = () => {
 
     const contentList = contents.flat();
     
-    const content = contentList.map(content => 
-        <li key={content.id}>
+    const content = contentList.map((content,i) => 
+        <li key={i}>
             <input 
             type="checkbox"
             value={content.id}

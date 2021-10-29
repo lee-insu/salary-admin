@@ -132,14 +132,14 @@ const ResearchUpload = () => {
     const keywordArr = [...keywordSet];
 
 
-    const keyword = keywordArr.map(keyword => 
-        <li key={keyword}>
+    const keyword = keywordArr.map((keyword,i) => 
+        <li key={i}>
             {/* <button onClick={()=>handleDeleteKeyword(keyword)}>x</button> */}
             {keyword}</li>
         )
 
-    const content = contents.flat().map(content => 
-        <li key={content.id}>
+    const content = contents.flat().map((content,i) => 
+        <li key={i}>
             <input 
             type="checkbox"
             value={content.id}

@@ -1,7 +1,7 @@
 import React, { useEffect, useRef, useState } from 'react';
 import style from './upload_modal.module.css';
 import {firestore, storage} from '../../../service/firebase';
-import firebase from 'firebase/app';
+
 
 const UploadModal = ({modalClose}) => {
 
@@ -52,9 +52,6 @@ const UploadModal = ({modalClose}) => {
     const onSubmit = async(e) => {
         e.preventDefault();
         if(titleKeyword) {
-            fireStore.doc(`${titleKeyword}`).set({
-                active:false
-            })
             fireStore.doc(`${titleKeyword}`).collection('appContents').doc(`${appName}${appVer}`).set({
                 app_name:appName,
                 app_ver:appVer,
@@ -109,6 +106,7 @@ const UploadModal = ({modalClose}) => {
 
     }
 
+
     const imgSubmit = async(e) => {
         e.preventDefault();
             const promises = imgs.map(img => {
@@ -162,17 +160,17 @@ const UploadModal = ({modalClose}) => {
 
     },[titleKeyword,appName,appVer])
 
-    const keyword = keywords.map(keyword => 
+    const keyword = keywords.map((keyword,i) => 
         <li 
-        key={keyword.id}
+        key={i}
         onClick={handleKeyword}
         >
             {keyword.id}
         </li>
         );
 
-    const getImg = getImgs.map(imgList => 
-    <li key={imgList.id}>
+    const getImg = getImgs.map((imgList,i) => 
+    <li key={i}>
         <div>{imgList.sub}</div>
         {imgList.imgs.map(img => 
             <img 
@@ -258,7 +256,7 @@ const UploadModal = ({modalClose}) => {
                     name="order"
                     onChange={imgChange}
                     >
-                        {orderList.map(order => <option value={order}>{order}번</option>)}
+                        {orderList.map((order,i) => <option key={i} value={order}>{order}번</option>)}
 
                     </select>
                 </div>

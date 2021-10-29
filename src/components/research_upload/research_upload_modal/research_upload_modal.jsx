@@ -188,7 +188,7 @@ const ResearchUploadModal = ({modalClose}) => {
                     name="month"
                     onChange={onChange}
                     >
-                  {monthList.map(mon => <option value={mon}>{mon}</option>)}
+                  {monthList.map((mon,i) => <option key={i} value={mon}>{mon}</option>)}
                     </select>
                 </div>
 

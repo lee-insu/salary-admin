@@ -2,6 +2,8 @@ import React, { useEffect, useState } from 'react';
 import style from './app_content_upload.module.css';
 import UploadModal from './upload_modal/upload_modal';
 import {firestore} from '../../service/firebase';
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import {faTimes} from "@fortawesome/free-solid-svg-icons";
 
 const AppContentUpload = () => {
 
@@ -132,55 +134,74 @@ const AppContentUpload = () => {
  
 
     const keyword = keywords.map((keyword,i) => 
-        <li key={i}>
+        <li key={i} className={style.keyword}>
             {keyword.id}
-            <button onClick={()=>deleteKeyword(keyword.id)}>x</button>
+            <FontAwesomeIcon className={style.keyword_del} icon={faTimes} onClick={()=>deleteKeyword(keyword.id)}/>
         </li>
         )
 
     const contentList = contents.flat();
     
     const content = contentList.map((content,i) => 
-        <li key={i}>
+        <li className={style.contents_li} key={i}>
             <input 
+            className={style.checkbox}
             type="checkbox"
             value={content.id}
             onChange={checkHandler}
             />
-            {content.app_name}{content.app_ver}
+            <div className={style.app}>{content.app_name} ver:{content.app_ver}</div>
+            
         </li>
         )
 
 
 
     return (
-        <div className={style.session}>
-             
+
+        <div className={style.container}>
+
+            <div className={style.title}>메인화면</div>
+            <div className={style.category}>앱 컨텐츠 등록</div>
+
+            <div className={style.keyword_add}>앱 키워드 등록</div>
+
                 <input 
+                className={style.input}
                 type="text"
                 value={input}
                 onChange={onChange}
                 onKeyDown={onKeyDown}
-                placeholder="keyword"
+                placeholder="키워드를 등록해주세요."
                 />
-                <button onClick={submitKeywords}>등록하기</button>
-            <ul>
-                {keyword}
-            </ul>
-            <button onClick={handleDelete}>컨텐츠 삭제</button>
-            <button onClick={modalClose}>컨텐츠 등록</button>
-            {modalOpen && <UploadModal modalClose={modalClose}/>}
 
-            <div>
-                <div>앱 컨텐츠 목록</div>    
-                <ul>    
-                    {content}
-                </ul>    
-            </div>
-            
+                <button className={style.button} onClick={submitKeywords}>등록</button>
 
+
+            <div className={style.keyword_list}>등록된 키워드 목록</div>
+                <ul className={style.keyword_ul}>
+                    {keyword}
+                </ul>
+
+            <div className={style.contents_container}>
+                <div className={style.contents}>
+                    <div className={style.contents_list}>앱 컨텐츠 목록</div>
+                    <div className={style.handle_btn}>
+                        <button className={style.handle_del} onClick={handleDelete}>컨텐츠 삭제</button>
+                        <button className={style.modal} onClick={modalClose}>컨텐츠 등록</button>
+                        {modalOpen && <UploadModal modalClose={modalClose}/>}
+                    </div>
            
+                </div>
+                <ul className={style.contents_ul}>
+                    {content}
+                </ul>
+            </div>
+           
+
+   
         </div>
+
     );
 };
 

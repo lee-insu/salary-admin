@@ -1,6 +1,8 @@
 import React, { useEffect, useRef, useState } from 'react';
 import style from './upload_modal.module.css';
 import {firestore, storage} from '../../../service/firebase';
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import {faTimes} from "@fortawesome/free-solid-svg-icons";
 
 
 const UploadModal = ({modalClose}) => {
@@ -60,7 +62,7 @@ const UploadModal = ({modalClose}) => {
                 active:false,
                 
             })
-            alert('suc');
+            alert('이제 이미지를 등록해주세요');
 
         }
     };
@@ -163,150 +165,151 @@ const UploadModal = ({modalClose}) => {
     const keyword = keywords.map((keyword,i) => 
         <li 
         key={i}
+        className={keyword.id === titleKeyword ? style.li_active :style.li_unactive}
         onClick={handleKeyword}
         >
             {keyword.id}
         </li>
         );
 
-    const getImg = getImgs.map((imgList,i) => 
-    <li key={i}>
-        <div>{imgList.sub}</div>
-        {imgList.imgs.map(img => 
-            <img 
-            style={{width:'223px',height:'482px'}}
-            src={img} />
-            )}
-    </li>)
+
 
     return (
         <div className={style.modal_container}>
             <div className={style.modal}>
+                <div className={style.container}>
+                    <div className={style.header}>
+                        <div className={style.title}>이미지 등록</div>
+                        <button
+                          className={style.modal_btn} 
+                          onClick={modalClose}>x</button>
+                    </div>
+                    <form onSubmit={onSubmit}>
+                        <div className={style.input_container}>
+                            <div className={style.sub_title}>앱(App) 이름</div>
+                            <input 
+                            className={style.input}
+                            type="text"
+                            name='app'
+                            value={appName}
+                            onChange={onChange}
+                            /> 
+                        </div>
 
-                <button
-                className={style.modal_btn} 
-                onClick={modalClose}>x</button>
+                        <div className={style.input_container}>
+                            <div className={style.sub_title}>앱(App) 버전</div>
+                            <input 
+                            className={style.input}
+                            type="text"
+                            name='ver'
+                            value={appVer}
+                            onChange={onChange}
+                            /> 
+                        </div>
 
-                <div>이미지 등록</div>
-                
-                <form onSubmit={onSubmit}>
-                <div>앱 이름</div>
-                <input 
-                type="text"
-                name="app"
-                value={appName}
-                onChange={onChange}
+                        <div className={style.input_container_app}>
+                        <div className={style.sub_title}>앱 키워드 등록</div>
+                            <ul className={style.keyword_ul}>
+                                {keyword}
+                            </ul>
+                        </div>
+                        <div className={style.input_container}>
+                            <div className={style.sub_title}>집중탐구 키워드</div>
+                            <div className={style.input_box}>
+                                <input 
+                                className={style.research_input}
+                                type="text"
+                                name='researchKeyword'
+                                value={researchInput}
+                                onChange={onChange}
+                                onKeyDown={onKeyDown}
+                                placeholder='키워드를 검색해주세요'
+                                />  
+                                <div className={style.research_list}>
+                                    {researchKeywords.map((keyword,i)=>
+                                        <div key={i} className={style.research_keyword}>
+                                            {keyword}
+                                            <FontAwesomeIcon className={style.research_del} onClick={()=>deleteKeyword(i)} icon={faTimes}/>
+                                        </div>
+                                        )}
+                                </div>
+                            </div>
+                        </div>
 
-                />
+                        <input type="submit" className={style.submit}/>
 
-                <div>앱 버전</div>
-                <input 
-                type="text"
-                name="ver"
-                value={appVer}
-                onChange={onChange}
-                
-                />
+                    </form>
 
-                <ul>
-                    {keyword}
-                </ul>
+                    <div className={style.input_container_img}>
+                                <div className={style.sub_title}>이미지 등록</div>
+                        </div>    
+
+                    <ul className={style.upload_container}>
+                        {urls.map((imgs,i) => 
+                        <li className={style.upload} key={i}>
+                            <div className={style.upload_sub}>{imgs.sub}</div>
+                            <img
+                            className={style.upload_img}
+                            src={imgs}
+                            />
+                        </li>
+                        )}
+                    </ul>
 
 
-                <div>집중탐구 키워드</div> 
+                    <div className={style.preview_container}>
+                        {preview.map((url,i)=> (
+                            <div className={style.preview} key={i}>
+                                 <FontAwesomeIcon className={style.preview_del} onClick={()=>deleteImages(i)} icon={faTimes}/>
+                                <img 
+                                className={style.preview_img}
+                                src={url} alt={url}/>
+                                 
+                        
+                            </div>
 
-                <input 
-                type="text"
-                name='researchKeyword'
-                value={researchInput}
-                onChange={onChange}
-                onKeyDown={onKeyDown}
-                />
+                        ))}
+                     </div> 
+                    <form onSubmit={imgSubmit}>
+                         <div className={style.img_container}>
+                                 <div className={style.order_container}>
+                                         <input 
+                                           className={style.input_img}
+                                           type="text"
+                                           name="subtext"
+                                           value={subText}
+                                           onChange={imgChange}
+                                           /> 
+                                           <div className={style.order_text}>순서</div>
+                                              <select name="order" onChange={imgChange}>
+                                              {orderList.map((order,i) => <option key={i} value={order}>{order}번</option>)}   
+                                              </select>  
 
-                <div>{researchKeywords.map((keyword,index)=>
-                <div>
-                    {keyword}
-                    <button onClick={()=>deleteKeyword(index)}>x</button>
+                                            <label htmlFor="file">
+                                              <div className={style.file_btn}>파일 올리기</div>
+                                            </label>  
+
+
+                                          <input 
+                                          accept="image/*"
+                                          type="file"
+                                          multiple
+                                          id="file"
+                                          name="img"
+                                          onChange={imgChange}
+                                          ref={fileInput}
+                                          style={{display:'none'}}
+                                          />
+                                    </div>
+                                </div> 
+                                <input className={style.img_submit} type="submit" value='이미지 제출'/>                
+                    </form>
+
                 </div>
-                )}</div>
-
-                ----
-
-                <input type="submit"/>
-                </form>
-
-
-                <ul>
-                    {getImg}
-                </ul>
-
-
-                <form onSubmit={imgSubmit}>
-
-                <input 
-                type="text"
-                name="subtext"
-                value={subText}
-                onChange={imgChange}
-                />
-
-                <div>
-                    <div>순서</div>
-                    <select
-                    name="order"
-                    onChange={imgChange}
-                    >
-                        {orderList.map((order,i) => <option key={i} value={order}>{order}번</option>)}
-
-                    </select>
-                </div>
-
-
-                <input 
-                accept="image/*"
-                type="file" 
-                multiple
-                id="file"
-                name="img"
-                onChange={imgChange}
-                ref={fileInput}
-                />
-
-                <input type="submit"/>
-                </form>
-
-            
-
-
-            
-            {preview.map((url,i) => (
-                <div>
-                    <img
-                key={i}
-                style={{width:'223px',height:'482px'}}
-                src={url}
-                />
-                <button onClick={()=>deleteImages(i)}>x</button>
-
-                </div>
-                
-            ))}
-
-                <div>
-                    ---result 
-                    {urls.map((url,i) =>(
-                 <img
-                 key={i}
-                 style={{width:'300px',height:'300px'}}
-                 src={url}
-                 />
-             ))}
-
-                </div>
-                
-             
             </div>
         </div>
+
+
     );
 };
 

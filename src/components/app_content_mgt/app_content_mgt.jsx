@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import style from './app_content_mgt.module.css';
-import './app_content_mgt.css';
 import { firestore } from '../../service/firebase';
+import classnames from 'classnames';
 
 
 const AppContentMgt = () => {
@@ -50,9 +50,9 @@ const AppContentMgt = () => {
     }
         return () => {
             console.log('component will unmount');
-            setTimeout(() => {
-                window.location.reload()
-            }, 700);
+            // setTimeout(() => {
+            //     window.location.reload()
+            // }, 700);
         }
     },[checked]) 
 
@@ -64,29 +64,27 @@ const AppContentMgt = () => {
     }
 
     
+
+
     const content = contents.map((content,i) => 
-            
-            <label key={i}>
+            <div className={style.content_list}>
+            <label className={style.switch} key={i}>
                 <input type="checkbox" checked={content.active ? true : false} name={content.title_app_keyword} value={content.id} onChange={onChange}/>
-                <span>{content.app_name} ver: {content.app_ver}</span>
+                <span className={classnames(style.slider,style.round,style.span)} ></span>
             </label>
-        )
+             <div className={style.content}>{content.app_name} ver: {content.app_ver}</div>
+            </div>
+    )
 
     return (
-        <div className={style.session}>
-            AppContentMgt
-            <div>
-            
-            {content}
-                {/* <label class='switch'>
-                     <input type="checkbox" value='hi' onChange={onChange}/>
-                     <span class='slider round'>gdgd</span>
-                </label> */}
+        <div className={style.container}>
+             <div className={style.title}>메인화면</div>
+                 <div className={style.category}>앱 컨텐츠 관리</div>
 
-                
-
-
-            </div>
+                 <div className={style.list}>등록된 컨텐츠 목록</div>
+                     <ul className={style.ul}>
+                         {content}
+                     </ul>
         </div>
     );
 };

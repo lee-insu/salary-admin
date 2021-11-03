@@ -45,9 +45,9 @@ const ResearchMgt = () => {
                 })
             })
             return () => {
-                setTimeout(() => {
-                    window.location.reload()
-                }, 700);
+                // setTimeout(() => {
+                //     window.location.reload()
+                // }, 700);
             }
         }
     },[checked])

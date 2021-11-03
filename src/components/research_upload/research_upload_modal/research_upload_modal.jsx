@@ -4,6 +4,8 @@ import { CKEditor } from "@ckeditor/ckeditor5-react";
 import ClassicEditor from "@ckeditor/ckeditor5-build-classic";
 import {storage} from '../../../service/firebase';
 import style from './research_upload_modal.module.css';
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import {faTimes} from "@fortawesome/free-solid-svg-icons";
 
 
 
@@ -92,10 +94,10 @@ const ResearchUploadModal = ({modalClose}) => {
     }
 
 
-    const keyword = keywords.map((keyword,index) => 
-        <li key={index}>
+    const keyword = keywords.map((keyword,i) => 
+        <li className={style.research_keyword} key={i}>
             {keyword}
-            <button onClick={()=>handleDelete(index)}>x</button>
+            <FontAwesomeIcon className={style.research_del} onClick={()=>handleDelete(i)} icon={faTimes}/>
         </li>
         )
 
@@ -136,91 +138,102 @@ const ResearchUploadModal = ({modalClose}) => {
 
 
     return (
-    <div className={style.modal_container}>
-        <div className={style.modal}>
-            <button 
-            className={style.modal_btn}
-            onClick={modalClose}
-            >x</button>
-            <div>컨텐츠 등록</div>
-            <form onSubmit={onSubmit}>
-                <div>
-                    <div>제목</div>
-                    <input 
-                    type="text"
-                    name="title"
-                    value={title}
-                    onChange={onChange}
-                    />
+        <div className={style.modal_container}>
+            <div className={style.modal}>
+                <div className={style.container}>
+                    <div className={style.header}>
+                        <div className={style.title}>컨텐츠 등록</div>
+                        <button
+                        className={style.modal_btn}
+                        onClick={modalClose}
+                        >x</button>
+                    </div>
+                    <form onSubmit={onSubmit}>
+                        <div className={style.input_container}>
+                            <div className={style.sub_title}>제목</div>
+                            <input 
+                            className={style.input}
+                            type="text"
+                            name='title'
+                            value={title}
+                            onChange={onChange}
+                            />
+                        </div>
+                        <div className={style.input_container}>
+                            <div className={style.sub_title}>소제목</div>
+                            <input 
+                            className={style.sub_input}
+                            type="text"
+                            name='subTitle'
+                            value={subTitle}
+                            onChange={onChange}
+                            />
+                        </div>
+                        <div className={style.input_container}>
+                            <div className={style.sub_title}>컨텐츠 키워드</div>
+                            <div className={style.input_box}>
+                                <input 
+                                className={style.research_input}
+                                type="text"
+                                name='keywords'
+                                value={input}
+                                onChange={onChange}
+                                onKeyDown={onKeyDown}
+                                />
+                                <ul className={style.research_ul}>
+                                    {keyword}
+                                </ul>
+                            </div>
+                        </div>
+                        <div className={style.input_container}>
+                            <div className={style.sub_title}>날짜 등록</div>
+                            <div className={style.select_container}>
+                                 <select className={style.select} name="year" onChange={onChange}>
+                                      <option value="2021">년</option>
+                                      <option value="2021">2021</option>
+                                     <option value="2022">2022</option>
+                                 </select>
+                                 <select className={style.select} name="month" onChange={onChange}>
+                                  {monthList.map((mon,i) => <option key={i} value={mon}>{mon}</option>)}
+                                 </select>
+                            </div>
+                        </div>
+                        <div className={style.input_container_img}>
+                            <div className={style.sub_title}>대표 이미지 등록(1장)</div>
+                            <label htmlFor="file">
+                                <div className={img ? style.in_box : style.out_box}>
+                                    <div className={style.box}>{!img ? '+':'ㅇ'}</div>
+                                </div>
+                            </label>
+                            <input 
+                            type="file"
+                            accept="imgage/*"
+                            id="file"
+                            name="img"
+                            onChange={onChange}
+                            ref={fileInput}
+                            required
+                            style={{display:'none'}}
+                            />
+                        </div>
+                        <div>
+                            <CKEditor
+                            config={{
+                                extraPlugins: [uploadPlugin]
+                            }}  
+                            editor = {ClassicEditor}
+                            data = {text}
+                            onChange = {(e,editor) => {
+                                const data = editor.getData();
+                                setText(data);
+                            } }
+                            />
+                        </div>
+                        <input className={style.submit} type="submit"/>
+                    </form>
                 </div>
-                <div>
-                    <div>부제목</div>
-                    <input 
-                    type="text"
-                    name="subTitle"
-                    value={subTitle}
-                    onChange={onChange}
-                    />
-                </div>
-                <div>
-                    <div>컨텐츠 키워드 등록</div>
-                    <input 
-                    type="text"
-                    name="keywords"
-                    value={input}
-                    onChange={onChange}
-                    onKeyDown={onKeyDown}
-                    />
-                    <ul>
-                        {keyword}
-                    </ul>
-                </div>
-                <div>
-                    <select 
-                    name="year"
-                    onChange={onChange}
-                    >
-                         <option>년</option>
-                        <option value="2021">2021</option>
-                        <option value="2022">2022</option>
-                    </select>
-                    <select 
-                    name="month"
-                    onChange={onChange}
-                    >
-                  {monthList.map((mon,i) => <option key={i} value={mon}>{mon}</option>)}
-                    </select>
-                </div>
-
-                <div>
-                    <input 
-                    accept="image/*"
-                    id="file"
-                    type="file"
-                    name="img"
-                    onChange={onChange}
-                    ref={fileInput}
-                    />
-
-                </div>
-
-                <div>
-                    <CKEditor
-                    config={{
-                        extraPlugins: [uploadPlugin]
-                    }}
-                    editor = {ClassicEditor}
-                    data = {text}
-                    onChange = {(e,editor) => {
-                        const data = editor.getData();
-                        setText(data);
-                    }}
-                    />
-                </div>
-                <input type="submit"/>
-            </form>
+            </div>
         </div>
-    </div>
     );
 };
 

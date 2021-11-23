@@ -1,3 +1,7 @@
+
+https://velog.io/@lamda/%ED%97%A4%EC%9D%B4%EC%95%B1-%EA%B0%9C%EB%B0%9C-%EC%9D%BC%EA%B8%B0
+velog에서 읽기
+
 # 시작
 
 UI디자이너와 협업을 통해 UXUI를 분석하는데 참고할만한 사이트가 부족해 디자이너에게 도움이 될 수 있는 UXUI 서비스를 만들기 위해 시작한 프로젝트입니다.

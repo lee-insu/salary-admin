@@ -1,6 +1,5 @@
 
-[velog에서 읽기](https://velog.io/@lamda/%ED%97%A4%EC%9D%B4%EC%95%B1-%EA%B0%9C%EB%B0%9C-%EC%9D%BC%EA%B8%B0)
-</br>
+[velog에서 읽기](https://velog.io/@lamda/%ED%97%A4%EC%9D%B4%EC%95%B1-%EA%B0%9C%EB%B0%9C-%EC%9D%BC%EA%B8%B0) </br>
 
 
 # 시작
@@ -25,6 +24,65 @@ UI디자이너와 협업을 통해 UXUI를 분석하는데 참고할만한 사�
 ![](https://images.velog.io/images/lamda/post/93559f2d-0bb6-4c1f-b047-174f07700ed6/image.png)
 
 이미지 등록에서는 앱의 이름, 버전과 같은 특성과 카테고리로 분류된 키워드 중 어울리는 키워드를 클릭하면 해당 데이터베이스에 담깁니다. 집중탐구 키워드는 글이 중심인 콘텐츠와 연동시키기 위해 등록합니다. 아래의 이미지 등록에서 앱의 기능마다 분류하고 이미지를 등록할 수 있습니다.
+
+firebase를 사용하면서 이미지를 업로드 했다는 미리보기와 db에 저장되는 부분을 분리하는 작업에 고민을 했습니다. 그리고 제가 생각한 방법은 둘 다 같은 사진이 저장되지만 미리보기는 이미지의 url를 만들어 내가 어떤 사진을 업로드 했는지 보여주고 그 url를 db에 또 담는 방식을 선택했습니다. 그렇게 미리보기와 db 동시에 업로드 되고 개별 이미지를 삭제할 수 있게 만들었습니다.
+```
+   const imgChange = e => {
+        const {target:{name,value}} = e;
+        if(name === 'subtext') {
+            setSubText(value)
+        }else if(name === 'img') {
+            for(let i = 0; i <e.target.files.length; i++) {
+                const newImgs = e.target.files[i];
+                newImgs['id'] = Math.random();
+                setImgs(prevState => [...prevState,newImgs]);
+                try {
+                   const createUrl = URL.createObjectURL(newImgs);
+                   setPreview(prevState => prevState.concat(createUrl));
+                   URL.revokeObjectURL(newImgs);
+
+                }catch(err) {
+                    console.log('image preview error',err)
+                }
+            }
+        }else if(name === 'order') {
+            setOrder(value)
+        }
+
+    }
+
+
+    const imgSubmit = async(e) => {
+        e.preventDefault();
+            const promises = imgs.map(img => {
+                const ref = storage.ref(`images/${titleKeyword}/${appName}/${appVer}/${img.name}`);
+                return ref 
+                .put(img)
+                .then(()=>ref.getDownloadURL())
+            });
+           
+            Promise.all(promises)
+            .then((urls) => {
+                imgStore.doc(`${titleKeyword}`).collection('img').doc(`${appName}${appVer}`).collection('list').add({
+                    app_name:appName,
+                    app_ver:appVer,
+                    sub:subText,
+                    imgs:urls,
+                    order,
+                })
+
+                alert('suc!');
+                setUrls(prevState => [prevState,...urls]);
+                setImgs([]);
+                setPreview([]);
+                setOrder("");
+                setSubText('');
+            })
+          .catch(err => console.log(err));
+
+    }
+
+```
 
 ![](https://images.velog.io/images/lamda/post/349d7ade-8383-4897-8774-0c0ac3c6f759/image.png)
 
@@ -119,9 +177,8 @@ UI디자이너와 협업을 통해 UXUI를 분석하는데 참고할만한 사�
 ## 5. 제작 과정
 
 제작 기간: 2개월 (63일)</br>
-스택: React, JS, Firebase, Redux, PostCSS</br>
+스택,서비스 : React, JS, Firebase, Redux, PostCSS</br>
 라이브러리: CKeditor</br>
 협업툴: Figma
-
 
 
